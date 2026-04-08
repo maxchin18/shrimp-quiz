@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>認識蝦的世界 - 闖關遊戲</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #0077b6, #00b4d8, #90e0ef);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 24px 32px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 4px;
+        }
+
+        .header .subtitle {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 20px 32px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .progress-dot {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #868e96;
+            font-size: 1em;
+            transition: all 0.4s;
+            position: relative;
+        }
+
+        .progress-dot.active {
+            background: #ff6b6b;
+            color: white;
+            transform: scale(1.15);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .progress-dot.completed {
+            background: #51cf66;
+            color: white;
+        }
+
+        .progress-dot.failed {
+            background: #ff8787;
+            color: white;
+        }
+
+        .content {
+            padding: 32px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .shrimp-image {
+            font-size: 100px;
+            margin-bottom: 16px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .question-area {
+            width: 100%;
+            text-align: center;
+        }
+
+        .level-title {
+            font-size: 1.1em;
+            color: #ff6b6b;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .question {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .shrimp-info {
+            background: linear-gradient(135deg, #e3fafc, #c5f6fa);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: left;
+            line-height: 1.8;
+            font-size: 0.95em;
+            color: #333;
+            border: 2px solid #99e9f2;
+        }
+
+        .shrimp-info h3 {
+            color: #0c8599;
+            margin-bottom: 8px;
+            font-size: 1.2em;
+        }
+
+        .shrimp-info .emoji-label {
+            font-size: 1.1em;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+            margin-top: 16px;
+        }
+
+        .option-btn {
+            padding: 16px 20px;
+            border: 3px solid #dee2e6;
+            border-radius: 14px;
+            background: white;
+            font-size: 1.05em;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .option-btn:hover {
+            border-color: #339af0;
+            background: #e7f5ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .option-btn.correct {
+            border-color: #51cf66;
+            background: #d3f9d8;
+            color: #2b8a3e;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            border-color: #ff6b6b;
+            background: #ffe3e3;
+            color: #c92a2a;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: bold;
+            text-align: center;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .feedback.correct {
+            background: #d3f9d8;
+            color: #2b8a3e;
+            border: 2px solid #69db7c;
+        }
+
+        .feedback.wrong {
+            background: #ffe3e3;
+            color: #c92a2a;
+            border: 2px solid #ff8787;
+        }
+
+        .next-btn {
+            margin-top: 20px;
+            padding: 14px 40px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(238, 90, 36, 0.4);
+        }
+
+        /* Start & Result screens */
+        .start-screen, .result-screen {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .start-screen h2 {
+            font-size: 1.6em;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .start-screen p {
+            color: #666;
+            font-size: 1.05em;
+            line-height: 1.8;
+            margin-bottom: 24px;
+        }
+
+        .start-btn {
+            padding: 16px 48px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(238, 90, 36, 0.4);
+        }
+
+        .result-screen h2 {
+            font-size: 1.8em;
+            margin-bottom: 12px;
+        }
+
+        .score-display {
+            font-size: 3.5em;
+            font-weight: bold;
+            margin: 16px 0;
+        }
+
+        .score-display.perfect { color: #f59f00; }
+        .score-display.great { color: #51cf66; }
+        .score-display.ok { color: #339af0; }
+        .score-display.low { color: #ff6b6b; }
+
+        .result-message {
+            font-size: 1.15em;
+            color: #555;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .stars {
+            font-size: 2.5em;
+            margin-bottom: 16px;
+        }
+
+        .bubbles {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -80px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            animation: rise linear infinite;
+        }
+
+        @keyframes rise {
+            to { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
+        }
+
+        .container { position: relative; z-index: 1; }
+
+        .shrimp-detail-img {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 12px;
+            border: 4px solid #99e9f2;
+            background: #e3fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.5em; }
+            .options { grid-template-columns: 1fr; }
+            .content { padding: 20px; }
+            .shrimp-image { font-size: 70px; }
+            .question { font-size: 1.2em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bubbles" id="bubbles"></div>
+    <div class="container">
+        <div class="header">
+            <h1>認識蝦的世界</h1>
+            <div class="subtitle">來挑戰看看你對蝦子了解多少吧！</div>
+        </div>
+        <div class="progress-bar" id="progressBar"></div>
+        <div class="content" id="content"></div>
+    </div>
+
+    <script>
+        const levels = [
+            {
+                title: "第一關：基礎辨識",
+                emoji: "🦐",
+                info: {
+                    name: "白蝦（白對蝦）",
+                    details: [
+                        "學名：Litopenaeus vannamei",
+                        "又稱南美白對蝦、白腳蝦",
+                        "體色呈半透明灰白色，煮熟後轉為橘紅色",
+                        "體長可達 23 公分，是全球養殖量最大的蝦種",
+                        "主要養殖於台灣南部沿海地區"
+                    ]
+                },
+                question: "白蝦煮熟後會變成什麼顏色？",
+                options: ["綠色", "橘紅色", "藍色", "黑色"],
+                answer: 1,
+                explain_correct: "答對了！白蝦煮熟後體內的蝦青素會釋放出來，讓蝦殼變成漂亮的橘紅色。",
+                explain_wrong: "可惜！白蝦煮熟後因為蝦青素的作用，會變成橘紅色喔！"
+            },
+            {
+                title: "第二關：蝦中之王",
+                emoji: "👑",
+                info: {
+                    name: "草蝦（斑節對蝦）",
+                    details: [
+                        "學名：Penaeus monodon",
+                        "又稱黑虎蝦、鬼蝦",
+                        "體表有明顯的黑褐色橫紋斑節",
+                        "體型大，最大可達 33 公分，是對蝦屬中最大的種類",
+                        "肉質彈牙鮮甜，口感紮實，被譽為「蝦中之王」",
+                        "台灣曾是全球最大草蝦養殖國"
+                    ]
+                },
+                question: "草蝦身上最明顯的特徵是什麼？",
+                options: ["全身鮮紅色", "黑褐色橫紋斑節", "透明無色", "藍色斑點"],
+                answer: 1,
+                explain_correct: "答對了！草蝦因為體表有明顯的黑褐色橫紋斑節，所以也叫「斑節對蝦」。",
+                explain_wrong: "答錯了！草蝦身上最明顯的特徵是黑褐色橫紋斑節，這也是牠名字的由來。"
+            },
+            {
+                title: "第三關：溪流精靈",
+                emoji: "🏔️",
+                info: {
+                    name: "溪蝦（粗糙沼蝦）",
+                    details: [
+                        "學名：Macrobrachium asperulum",
+                        "又稱黑殼蝦，屬於淡水蝦類",
+                        "體長約 3～5 公分，體型較小",
+                        "生活在台灣各地的溪流和水圳中",
+                        "螯足不對稱，一大一小，是辨識的重要特徵",
+                        "在台灣夜市常見的「炸溪蝦」就是牠！"
+                    ]
+                },
+                question: "溪蝦主要生活在什麼環境中？",
+                options: ["深海海底", "淡水溪流", "珊瑚礁", "極地冰層下"],
+                answer: 1,
+                explain_correct: "答對了！溪蝦是淡水蝦類，生活在台灣各地的溪流和水圳中。",
+                explain_wrong: "可惜！溪蝦是道地的淡水蝦類，生活在台灣的溪流與水圳中。"
+            },
+            {
+                title: "第四關：清潔大師",
+                emoji: "🧹",
+                info: {
+                    name: "清潔蝦（醫生蝦）",
+                    details: [
+                        "學名：Lysmata amboinensis",
+                        "又稱印度洋白紋清潔蝦",
+                        "體色鮮紅，背部有一條明亮的白色縱紋",
+                        "會幫其他魚類清除身上的寄生蟲和壞死組織",
+                        "魚類會主動靠近牠排隊等候清潔服務",
+                        "在珊瑚礁生態系中扮演重要的共生角色",
+                        "觸鬚極長，可達體長的 2 倍"
+                    ]
+                },
+                question: "清潔蝦會幫魚類做什麼事情？",
+                options: ["餵食小魚", "清除寄生蟲和壞死組織", "幫魚築巢", "教魚游泳"],
+                answer: 1,
+                explain_correct: "答對了！清潔蝦會幫魚類清除寄生蟲和壞死組織，牠們之間形成互利共生的關係。",
+                explain_wrong: "答錯了！清潔蝦最厲害的技能是幫魚類清除寄生蟲和壞死組織，是海中的「醫生」。"
+            },
+            {
+                title: "第五關：終極挑戰",
+                emoji: "🔥",
+                info: {
+                    name: "槍蝦（鼓蝦）",
+                    details: [
+                        "學名：Alpheidae 科",
+                        "又稱手槍蝦、卡搭蝦",
+                        "擁有一隻特化的巨大螯足，可以高速閉合",
+                        "螯足閉合時會產生氣穴現象（空化效應）",
+                        "產生的衝擊波溫度瞬間可達 4700°C，接近太陽表面溫度！",
+                        "衝擊波伴隨聲響高達 218 分貝，是海洋中最大聲的生物之一",
+                        "利用這個能力來擊暈獵物和嚇退敵人",
+                        "常與蝦虎魚形成共生關係"
+                    ]
+                },
+                question: "槍蝦的衝擊波瞬間溫度最接近以下哪個？",
+                options: ["沸水（100°C）", "火山岩漿（1200°C）", "太陽表面（約5500°C）", "室溫（25°C）"],
+                answer: 2,
+                explain_correct: "太厲害了！槍蝦螯足閉合產生的氣穴效應，瞬間溫度可達 4700°C，接近太陽表面的 5500°C！",
+                explain_wrong: "答錯了！槍蝦的衝擊波瞬間溫度可達 4700°C，最接近太陽表面的 5500°C，非常驚人！"
+            }
+        ];
+
+        let currentLevel = -1;
+        let score = 0;
+        let answered = false;
+
+        function createBubbles() {
+            const container = document.getElementById('bubbles');
+            for (let i = 0; i < 15; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                const size = Math.random() * 60 + 20;
+                bubble.style.width = size + 'px';
+                bubble.style.height = size + 'px';
+                bubble.style.left = Math.random() * 100 + '%';
+                bubble.style.animationDuration = (Math.random() * 8 + 6) + 's';
+                bubble.style.animationDelay = (Math.random() * 5) + 's';
+                container.appendChild(bubble);
+            }
+        }
+
+        function updateProgress() {
+            const bar = document.getElementById('progressBar');
+            bar.innerHTML = '';
+            for (let i = 0; i < levels.length; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'progress-dot';
+                if (i === currentLevel) dot.classList.add('active');
+                else if (i < currentLevel) dot.classList.add('completed');
+                dot.textContent = i + 1;
+                bar.appendChild(dot);
+            }
+        }
+
+        function showStart() {
+            document.getElementById('progressBar').style.display = 'none';
+            document.getElementById('content').innerHTML = `
+                <div class="start-screen">
+                    <div class="shrimp-image">🦐</div>
+                    <h2>歡迎來到蝦的世界！</h2>
+                    <p>
+                        蝦是海洋與淡水中最迷人的生物之一。<br>
+                        從餐桌上的美味到深海中的奇妙生態，<br>
+                        蝦的世界充滿了令人驚奇的知識！<br><br>
+                        本遊戲共有 <strong>5 個關卡</strong>，<br>
+                        每一關會介紹一種特別的蝦，<br>
+                        閱讀資訊後回答問題即可過關！
+                    </p>
+                    <button class="start-btn" onclick="startGame()">開始闖關！</button>
+                </div>
+            `;
+        }
+
+        function startGame() {
+            currentLevel = 0;
+            score = 0;
+            answered = false;
+            document.getElementById('progressBar').style.display = 'flex';
+            showLevel();
+        }
+
+        function showLevel() {
+            answered = false;
+            updateProgress();
+            const level = levels[currentLevel];
+            const infoHTML = level.info.details.map(d => `<div class="emoji-label">• ${d}</div>`).join('');
+
+            document.getElementById('content').innerHTML = `
+                <div class="question-area">
+                    <div class="level-title">${level.title}</div>
+                    <div class="shrimp-detail-img">${level.emoji}</div>
+                    <div class="shrimp-info">
+                        <h3>📚 ${level.info.name}</h3>
+                        ${infoHTML}
+                    </div>
+                    <div class="question">❓ ${level.question}</div>
+                    <div class="options" id="options">
+                        ${level.options.map((opt, i) => `
+                            <button class="option-btn" onclick="checkAnswer(${i})">${opt}</button>
+                        `).join('')}
+                    </div>
+                    <div id="feedback"></div>
+                </div>
+            `;
+        }
+
+        function checkAnswer(selected) {
+            if (answered) return;
+            answered = true;
+            const level = levels[currentLevel];
+            const buttons = document.querySelectorAll('.option-btn');
+            const feedbackDiv = document.getElementById('feedback');
+
+            buttons.forEach((btn, i) => {
+                btn.disabled = true;
+                if (i === level.answer) btn.classList.add('correct');
+                if (i === selected && i !== level.answer) btn.classList.add('wrong');
+            });
+
+            if (selected === level.answer) {
+                score++;
+                feedbackDiv.innerHTML = `
+                    <div class="feedback correct">✅ ${level.explain_correct}</div>
+                    <button class="next-btn" onclick="nextLevel()">
+                        ${currentLevel < levels.length - 1 ? '前往下一關 ➜' : '查看結果 🏆'}
+                    </button>
+                `;
+            } else {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback wrong">❌ ${level.explain_wrong}</div>
+                    <button class="next-btn" onclick="nextLevel()">
+                        ${currentLevel < levels.length - 1 ? '前往下一關 ➜' : '查看結果 🏆'}
+                    </button>
+                `;
+            }
+
+            // Update progress dot
+            const dots = document.querySelectorAll('.progress-dot');
+            if (selected === level.answer) {
+                dots[currentLevel].classList.add('completed');
+            } else {
+                dots[currentLevel].classList.add('failed');
+            }
+        }
+
+        function nextLevel() {
+            currentLevel++;
+            if (currentLevel >= levels.length) {
+                showResult();
+            } else {
+                showLevel();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('progressBar').style.display = 'none';
+            let grade, message, stars, scoreClass;
+
+            if (score === 5) {
+                grade = "蝦博士";
+                message = "太厲害了！你是真正的蝦類專家！<br>所有關卡全數答對，完美通關！";
+                stars = "⭐⭐⭐⭐⭐";
+                scoreClass = "perfect";
+            } else if (score >= 4) {
+                grade = "蝦達人";
+                message = "非常優秀！你對蝦的認識相當豐富！<br>再接再厲，挑戰滿分吧！";
+                stars = "⭐⭐⭐⭐";
+                scoreClass = "great";
+            } else if (score >= 3) {
+                grade = "蝦學徒";
+                message = "不錯的表現！你已經有基本的蝦類知識了。<br>再多學習一些就能成為蝦達人！";
+                stars = "⭐⭐⭐";
+                scoreClass = "ok";
+            } else {
+                grade = "蝦新手";
+                message = "沒關係，學習蝦的世界永遠不嫌晚！<br>再玩一次，你一定會進步的！";
+                stars = "⭐⭐";
+                scoreClass = "low";
+            }
+
+            document.getElementById('content').innerHTML = `
+                <div class="result-screen">
+                    <div class="shrimp-image">🏆</div>
+                    <h2>闖關結束！</h2>
+                    <div class="stars">${stars}</div>
+                    <div class="score-display ${scoreClass}">${score} / ${levels.length}</div>
+                    <div style="font-size:1.4em; font-weight:bold; color:#333; margin-bottom:8px;">${grade}</div>
+                    <div class="result-message">${message}</div>
+                    <button class="start-btn" onclick="startGame()">再玩一次 🔄</button>
+                </div>
+            `;
+        }
+
+        createBubbles();
+        showStart();
+    </script>
+</body>
+</html>
